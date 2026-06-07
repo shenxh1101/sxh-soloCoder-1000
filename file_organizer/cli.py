@@ -2,7 +2,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 import click
 
 if sys.platform.startswith("win"):
@@ -351,7 +351,7 @@ def plan_command(
     plan_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:8]
 
     if output:
-        planner.export_plan(plan, output)
+        planner.export_plan(plan, output, filter_excluded if filter_excluded else None)
 
     if output_json:
         export_plan_json(plan, output_json, plan_id, skipped_categories, skipped_files, config_path, result, filter_excluded if filter_excluded else None)
@@ -442,14 +442,12 @@ def move_command(
             skipped_categories_from_plan = set(plan_data.get("skipped_categories", []))
             skipped_files_from_plan = set(plan_data.get("skipped_files", []))
 
-        skipped_actions = []
         skipped_categories_final = set()
         skipped_files_final = set()
 
+        file_skip_status = {}
+
         for cat, cat_data in plan_data.get("categories", {}).items():
-            if cat not in plan.categories:
-                plan.categories[cat] = []
-            
             if isinstance(cat_data, dict) and "actions" in cat_data:
                 category_skipped = cat_data.get("skipped", False)
                 actions_data = cat_data["actions"]
@@ -459,46 +457,54 @@ def move_command(
             
             if category_skipped:
                 skipped_categories_final.add(cat)
-                for a in actions_data:
-                    skipped_actions.append(a)
-                continue
             
             for a in actions_data:
+                source_str = str(a["source"])
                 action_skipped = a.get("skipped", False) or \
-                                str(a["source"]) in skipped_files_from_plan or \
+                                category_skipped or \
+                                source_str in skipped_files_from_plan or \
                                 cat in skipped_categories_from_plan
-
-                if action_skipped:
-                    skipped_actions.append(a)
-                    if a.get("skipped"):
-                        skipped_files_final.add(str(a["source"]))
-                    continue
-
-                action = MoveAction(
-                    source=Path(a["source"]),
-                    destination=Path(a["destination"]),
-                    file_size=a["file_size"],
-                    category=cat,
-                )
-                plan.categories[cat].append(action)
+                
+                skip_reason = None
+                if category_skipped or cat in skipped_categories_from_plan:
+                    skip_reason = f"分类跳过: {cat}"
+                elif a.get("skipped") or source_str in skipped_files_from_plan:
+                    skip_reason = "文件跳过: 用户标记"
+                
+                if source_str not in file_skip_status:
+                    file_skip_status[source_str] = {
+                        "skipped": action_skipped,
+                        "skip_reason": skip_reason,
+                        "category": cat,
+                        "action_data": a,
+                    }
+                else:
+                    existing = file_skip_status[source_str]
+                    if action_skipped and not existing["skipped"]:
+                        existing["skipped"] = True
+                        existing["skip_reason"] = skip_reason
 
         for a in plan_data["actions"]:
             source_str = str(a["source"])
-            is_skipped = a.get("skipped", False) or \
-                        source_str in skipped_files_from_plan
+            action_skipped = a.get("skipped", False) or \
+                            source_str in skipped_files_from_plan
             
             in_skipped_cat = False
+            action_category = a.get("category")
             for cat, cat_data in plan_data.get("categories", {}).items():
                 if isinstance(cat_data, dict) and cat_data.get("skipped", False):
                     if any(aa.get("source") == source_str for aa in cat_data.get("actions", [])):
                         in_skipped_cat = True
                         break
             
-            if is_skipped or in_skipped_cat:
-                continue
+            skip_reason = None
+            if in_skipped_cat:
+                skip_reason = f"分类跳过: {action_category or '未知分类'}"
+                action_skipped = True
+            elif a.get("skipped") or source_str in skipped_files_from_plan:
+                skip_reason = "文件跳过: 用户标记"
+                action_skipped = True
             
-            # 从分类中查找对应的分类信息
-            action_category = a.get("category")
             if not action_category:
                 for cat, cat_data in plan_data.get("categories", {}).items():
                     if isinstance(cat_data, dict) and "actions" in cat_data:
@@ -506,12 +512,43 @@ def move_command(
                             action_category = cat
                             break
             
+            if source_str not in file_skip_status:
+                file_skip_status[source_str] = {
+                    "skipped": action_skipped,
+                    "skip_reason": skip_reason,
+                    "category": action_category,
+                    "action_data": a,
+                }
+            else:
+                existing = file_skip_status[source_str]
+                if action_skipped and not existing["skipped"]:
+                    existing["skipped"] = True
+                    existing["skip_reason"] = skip_reason
+                if not existing["category"] and action_category:
+                    existing["category"] = action_category
+
+        for cat in plan_data.get("categories", {}).keys():
+            if cat not in plan.categories:
+                plan.categories[cat] = []
+
+        for source_str, info in file_skip_status.items():
+            a = info["action_data"]
+            cat = info["category"]
             action = MoveAction(
                 source=Path(a["source"]),
                 destination=Path(a["destination"]),
                 file_size=a["file_size"],
-                category=action_category,
+                category=cat,
             )
+            
+            if info["skipped"]:
+                action.status = "skipped"
+                action.skip_reason = info["skip_reason"]
+                skipped_files_final.add(source_str)
+            
+            if cat and cat in plan.categories:
+                plan.categories[cat].append(action)
+            
             plan.actions.append(action)
 
         if plan.actions:
@@ -520,9 +557,9 @@ def move_command(
         all_category_skipped = skipped_categories_from_plan | skipped_categories_final
         all_file_skipped = skipped_files_from_plan | skipped_files_final
 
-        total_actions = len(plan_data["actions"])
-        skipped_count = len(skipped_actions)
-        move_count = total_actions - skipped_count
+        total_actions = len(plan.actions)
+        skipped_count = sum(1 for a in plan.actions if a.status == "skipped")
+        move_count = plan.total_actions
 
         click.echo(f"\n[PLAN] 使用计划 {used_plan_id}")
         click.echo(f"   计划总数: {total_actions} 个文件")
@@ -530,12 +567,12 @@ def move_command(
         click.echo(f"   将跳过: {skipped_count} 个文件")
         if all_category_skipped:
             click.echo(f"   跳过分类: {', '.join(sorted(all_category_skipped))}")
-        if all_file_skipped:
-            click.echo(f"   跳过文件: {len(all_file_skipped)} 个")
+        if skipped_files_final:
+            click.echo(f"   跳过文件: {len(skipped_files_final)} 个")
 
         click.echo()
         if not yes:
-            confirm = click.confirm(f"确认执行以上计划? (将移动 {plan.total_actions} 个文件，跳过 {skipped_count} 个)", default=False)
+            confirm = click.confirm(f"确认执行以上计划? (将移动 {move_count} 个文件，跳过 {skipped_count} 个)", default=False)
             if not confirm:
                 click.echo("已取消")
                 return

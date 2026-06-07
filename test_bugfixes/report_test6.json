@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-06-08 02:16:22",
+  "execution": {
+    "log_id": "20260608_021622_bca5eb82",
+    "source": "plan",
+    "plan_id": "20260608_021622_eba6e3c8",
+    "config_file": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\config.json",
+    "timestamp": "2026-06-08 02:16:22",
+    "success_count": 8,
+    "failed_count": 0,
+    "skipped_count": 0,
+    "moved_size": 59,
+    "moved_size_human": "59 B",
+    "skipped_size": 0,
+    "skipped_size_human": "0 B",
+    "failed_size": 0,
+    "failed_size_human": "0 B"
+  },
+  "plan": {
+    "total_actions": 8,
+    "total_size": 59,
+    "total_size_human": "59 B"
+  },
+  "category_stats": [
+    {
+      "category": "documents",
+      "name": "文档",
+      "count": 3,
+      "size": 18,
+      "size_human": "18 B"
+    },
+    {
+      "category": "videos",
+      "name": "视频",
+      "count": 2,
+      "size": 20,
+      "size_human": "20 B"
+    },
+    {
+      "category": "programs",
+      "name": "安装包",
+      "count": 1,
+      "size": 9,
+      "size_human": "9 B"
+    },
+    {
+      "category": "personal_photos",
+      "name": "personal_photos",
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B"
+    },
+    {
+      "category": "images",
+      "name": "图片",
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B"
+    }
+  ],
+  "details": {
+    "successful": [
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\data.xlsx",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Documents\\data.xlsx",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "documents",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\notes.txt",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Documents\\notes.txt",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "documents",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\report.docx",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Documents\\report.docx",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "documents",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\installer.exe",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Programs\\installer.exe",
+        "size": 9,
+        "size_human": "9 B",
+        "category": "programs",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\movie.avi",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Videos\\movie.avi",
+        "size": 7,
+        "size_human": "7 B",
+        "category": "videos",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\video.mp4",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Videos\\video.mp4",
+        "size": 13,
+        "size_human": "13 B",
+        "category": "videos",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\Screenshot_2024.png",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Photos\\Personal\\Screenshot_2024_1.png",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "personal_photos",
+        "note": "目标文件已存在，将自动重命名为: Screenshot_2024_1.png"
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\source\\vacation.jpg",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_bugfixes\\target\\Images\\vacation.jpg",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "images",
+        "note": null
+      }
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "savings": {
+    "duplicates": {
+      "count": 0,
+      "size": 0,
+      "size_human": "0 B"
+    },
+    "temp_files": {
+      "count": 0,
+      "size": 0,
+      "size_human": "0 B"
+    },
+    "empty_dirs": {
+      "count": 0
+    },
+    "total_recoverable": 0,
+    "total_recoverable_human": "0 B"
+  }
+}

@@ -43,8 +43,16 @@ class FileMover:
         completed = 0
 
         for action in self.plan.actions:
+            if action.status == "skipped":
+                self.current_log.actions.append(action)
+                completed += 1
+                if self.progress_callback:
+                    self.progress_callback(completed, total, action)
+                continue
+
             action.status = "pending"
             action.error = None
+            old_skip_reason = action.skip_reason
             action.skip_reason = None
 
             if not simulate:
@@ -70,6 +78,9 @@ class FileMover:
                 except Exception as e:
                     action.status = "failed"
                     action.error = str(e)
+
+            if old_skip_reason and "自动重命名" in old_skip_reason and action.status in ("success", "simulated"):
+                action.skip_reason = old_skip_reason
 
             self.current_log.actions.append(action)
             completed += 1

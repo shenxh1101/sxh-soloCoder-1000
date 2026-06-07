@@ -202,7 +202,9 @@ class PlanGenerator:
 
         print(f"\n{'='*70}\n")
 
-    def export_plan(self, plan: Plan, output_path: Path) -> None:
+    def export_plan(self, plan: Plan, output_path: Path, filter_excluded: Optional[List[Dict]] = None) -> None:
+        from typing import Dict, List, Optional
+        
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -221,10 +223,20 @@ class PlanGenerator:
                 cat_name = DEFAULT_CATEGORIES.get(category, {}).get("name", category)
                 f.write(f"- {cat_name}: {len(actions)} 个, {format_size(cat_size)}\n")
 
-            f.write("\n## 详细计划\n\n")
+            if filter_excluded:
+                f.write(f"\n## 筛选排除的文件 ({len(filter_excluded)} 个)\n\n")
+                f.write("| 序号 | 文件名 | 分类 | 排除原因 |\n")
+                f.write("|------|--------|------|----------|\n")
+                for i, item in enumerate(filter_excluded[:50], 1):
+                    f.write(f"| {i} | {item.get('filename', '')} | {item.get('category', '')} | {item.get('exclude_reason', '')} |\n")
+                if len(filter_excluded) > 50:
+                    f.write(f"| ... | 还有 {len(filter_excluded) - 50} 个 | | |\n")
+                f.write("\n")
+
+            f.write("## 详细计划\n\n")
             f.write("| 序号 | 源文件 | 目标文件 | 大小 |\n")
             f.write("|------|--------|----------|------|\n")
             for i, action in enumerate(plan.actions, 1):
-                f.write(f"| {i} | {action.source} | {action.destination} | {format_size(action.file_size)} |\n")
+                f.write(f"| {i} | {action.source.name} | {action.destination.name} | {format_size(action.file_size)} |\n")
 
         print(f"计划已导出到: {output_path}")

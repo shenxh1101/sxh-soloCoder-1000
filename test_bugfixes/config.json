@@ -1,0 +1,8 @@
+{
+  "custom_extensions": {
+    "png": "personal_photos"
+  },
+  "target_dirs": {
+    "personal_photos": "Photos/Personal"
+  }
+}

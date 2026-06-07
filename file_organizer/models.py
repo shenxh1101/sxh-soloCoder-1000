@@ -200,11 +200,19 @@ class Plan:
 
     @property
     def total_actions(self) -> int:
-        return len(self.actions)
+        return sum(1 for a in self.actions if a.status != "skipped")
 
     @property
     def total_size(self) -> int:
-        return sum(a.file_size for a in self.actions)
+        return sum(a.file_size for a in self.actions if a.status != "skipped")
+
+    @property
+    def skipped_actions(self) -> List[MoveAction]:
+        return [a for a in self.actions if a.status == "skipped"]
+
+    @property
+    def active_actions(self) -> List[MoveAction]:
+        return [a for a in self.actions if a.status != "skipped"]
 
 
 @dataclass
