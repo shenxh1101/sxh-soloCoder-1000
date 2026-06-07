@@ -29,12 +29,14 @@ class FileMover:
         self.progress_callback = progress_callback
         self.current_log: Optional[MoveLog] = None
 
-    def execute(self, simulate: bool = False) -> MoveLog:
+    def execute(self, simulate: bool = False, source: str = "direct", plan_id: Optional[str] = None) -> MoveLog:
         log_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:8]
         self.current_log = MoveLog(
             log_id=log_id,
             timestamp=datetime.now(),
             actions=[],
+            source=source,
+            plan_id=plan_id,
         )
 
         total = len(self.plan.actions)
@@ -156,12 +158,16 @@ class FileMover:
         total_size = sum(a.file_size for a in log.actions if a.status in ("success", "simulated"))
 
         mode = "模拟执行" if simulate else "实际执行"
+        source_text = {"direct": "直接执行", "plan": "计划执行"}.get(log.source, log.source)
 
         print(f"\n{'='*70}")
         print(f"执行结果 - {mode}")
         print(f"{'='*70}")
         print(f"日志ID: {log.log_id}")
         print(f"执行时间: {log.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"来源: {source_text}")
+        if log.plan_id:
+            print(f"关联计划: {log.plan_id}")
         print(f"-" * 70)
         print(f"成功: {success_count} 个")
         print(f"失败: {failed_count} 个")

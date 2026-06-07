@@ -115,13 +115,19 @@ class UndoManager:
         print(f"操作历史 (最近 {len(logs)} 条)")
         print(f"{'='*70}")
 
+        source_text = {"direct": "直接执行", "plan": "计划执行"}
+
         for i, log in enumerate(logs, 1):
             success = sum(1 for a in log.actions if a.status == "success")
             failed = sum(1 for a in log.actions if a.status == "failed")
             size = sum(a.file_size for a in log.actions if a.status == "success")
+            src = source_text.get(log.source, log.source)
 
             print(f"\n{i}. 日志ID: {log.log_id}")
             print(f"   时间: {log.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"   来源: {src}")
+            if log.plan_id:
+                print(f"   关联计划: {log.plan_id}")
             print(f"   成功: {success} 个, 失败: {failed} 个")
             print(f"   大小: {format_size(size)}")
 
@@ -146,9 +152,9 @@ class UndoManager:
 
         for i, action in enumerate(log.actions, 1):
             status_icon = {
-                "success": "✓",
-                "failed": "✗",
-                "simulated": "○",
+                "success": "[OK]",
+                "failed": "[X]",
+                "simulated": "[SIM]",
                 "undo_success": "↶",
                 "undo_failed": "↷",
             }.get(action.status, "?")

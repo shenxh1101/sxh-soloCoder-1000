@@ -144,10 +144,10 @@ class Reporter:
         for i, action in enumerate(plan.actions, 1):
             status = action.status if move_log else "计划中"
             status_icon = {
-                "success": "✓",
-                "failed": "✗",
-                "simulated": "○",
-                "pending": "⏳",
+                "success": "[OK]",
+                "failed": "[X]",
+                "simulated": "[SIM]",
+                "pending": "[WAIT]",
             }.get(status, "?")
             report.append(f"| {i} | {status_icon} {status} | {action.source} | {action.destination} | {format_size(action.file_size)} |")
 
@@ -177,17 +177,24 @@ class Reporter:
         total_space = scan_result.total_size
         duplicates_waste = scan_result.duplicates_size
         temp_space = scan_result.temp_size
+        empty_dirs_count = len(scan_result.empty_dirs)
         recoverable_space = duplicates_waste + temp_space
 
         report.append("## 空间分析")
         report.append("")
         report.append(f"- 总占用空间: {format_size(total_space)}")
-        report.append(f"- 重复文件浪费: {format_size(duplicates_waste)} "
-                     f"({duplicates_waste/total_space*100:.1f}%)" if total_space > 0 else "")
-        report.append(f"- 临时文件占用: {format_size(temp_space)} "
-                     f"({temp_space/total_space*100:.1f}%)" if total_space > 0 else "")
-        report.append(f"- 可回收空间总计: {format_size(recoverable_space)} "
-                     f"({recoverable_space/total_space*100:.1f}%)" if total_space > 0 else "")
+        report.append("")
+        report.append("### 可回收空间明细")
+        report.append("")
+        report.append("| 类别 | 数量 | 可节省空间 | 占比 |")
+        report.append("|------|------|------------|------|")
+        report.append(f"| 重复文件 | {len(scan_result.duplicates)} 组 | {format_size(duplicates_waste)} | "
+                     f"{(duplicates_waste/total_space*100):.1f}%" if total_space > 0 else "0.0% |")
+        report.append(f"| 临时文件 | {len(scan_result.temp_files)} 个 | {format_size(temp_space)} | "
+                     f"{(temp_space/total_space*100):.1f}%" if total_space > 0 else "0.0% |")
+        report.append(f"| 空文件夹 | {empty_dirs_count} 个 | - | - |")
+        report.append(f"| **合计** | - | **{format_size(recoverable_space)}** | "
+                     f"**{(recoverable_space/total_space*100):.1f}%**" if total_space > 0 else "**0.0%** |")
         report.append("")
 
         if move_log:
@@ -199,12 +206,30 @@ class Reporter:
             report.append("")
 
         if scan_result.duplicates:
-            report.append("## 重复文件详情")
+            report.append("## 重复文件详情（前20）")
             report.append("")
             report.append("| 文件名 | 副本数 | 可节省 |")
             report.append("|--------|--------|--------|")
             for dup in sorted(scan_result.duplicates, key=lambda d: d.wasted_size, reverse=True)[:20]:
                 report.append(f"| {dup.files[0].name} | {len(dup.files)} | {format_size(dup.wasted_size)} |")
+            report.append("")
+
+        if scan_result.temp_files:
+            report.append("## 临时文件详情（前20）")
+            report.append("")
+            report.append("| 文件名 | 大小 | 路径 |")
+            report.append("|--------|------|------|")
+            for f in sorted(scan_result.temp_files, key=lambda f: f.size, reverse=True)[:20]:
+                report.append(f"| {f.name} | {format_size(f.size)} | {f.path} |")
+            report.append("")
+
+        if scan_result.empty_dirs:
+            report.append("## 空文件夹详情（前20）")
+            report.append("")
+            for d in scan_result.empty_dirs[:20]:
+                report.append(f"- {d}")
+            if len(scan_result.empty_dirs) > 20:
+                report.append(f"- ... 还有 {len(scan_result.empty_dirs) - 20} 个")
             report.append("")
 
         report_content = "\n".join(report)
@@ -219,13 +244,188 @@ class Reporter:
         return report_content
 
     @staticmethod
+    def generate_scan_report_json(
+        scan_result: ScanResult,
+        output_path: Optional[Path] = None,
+    ) -> dict:
+        import json
+
+        report_data = {
+            "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "overview": {
+                "total_count": scan_result.total_count,
+                "total_size": scan_result.total_size,
+                "total_size_human": format_size(scan_result.total_size),
+                "empty_dirs_count": len(scan_result.empty_dirs),
+                "duplicate_groups": len(scan_result.duplicates),
+                "duplicate_size": scan_result.duplicates_size,
+                "duplicate_size_human": format_size(scan_result.duplicates_size),
+                "temp_files_count": len(scan_result.temp_files),
+                "temp_size": scan_result.temp_size,
+                "temp_size_human": format_size(scan_result.temp_size),
+                "recoverable_space": scan_result.duplicates_size + scan_result.temp_size,
+                "recoverable_space_human": format_size(scan_result.duplicates_size + scan_result.temp_size),
+            },
+            "savings_breakdown": {
+                "duplicates": {
+                    "count": len(scan_result.duplicates),
+                    "unit": "groups",
+                    "size": scan_result.duplicates_size,
+                    "size_human": format_size(scan_result.duplicates_size),
+                },
+                "temp_files": {
+                    "count": len(scan_result.temp_files),
+                    "unit": "files",
+                    "size": scan_result.temp_size,
+                    "size_human": format_size(scan_result.temp_size),
+                },
+                "empty_dirs": {
+                    "count": len(scan_result.empty_dirs),
+                    "unit": "dirs",
+                    "size": 0,
+                    "size_human": "0 B",
+                },
+            },
+            "type_distribution": [],
+            "duplicates": [],
+            "temp_files": [],
+            "empty_dirs": [str(d) for d in scan_result.empty_dirs],
+        }
+
+        type_stats: dict = defaultdict(int)
+        type_count: dict = defaultdict(int)
+        for f in scan_result.files:
+            type_stats[f.file_type] += f.size
+            type_count[f.file_type] += 1
+
+        for ftype in sorted(type_stats.keys(), key=lambda t: type_stats[t], reverse=True):
+            type_name = DEFAULT_CATEGORIES.get(ftype, {}).get("name", ftype)
+            report_data["type_distribution"].append({
+                "type": ftype,
+                "name": type_name,
+                "count": type_count[ftype],
+                "size": type_stats[ftype],
+                "size_human": format_size(type_stats[ftype]),
+            })
+
+        for dup in sorted(scan_result.duplicates, key=lambda d: d.wasted_size, reverse=True)[:100]:
+            report_data["duplicates"].append({
+                "name": dup.files[0].name,
+                "copies": len(dup.files),
+                "wasted_size": dup.wasted_size,
+                "wasted_size_human": format_size(dup.wasted_size),
+                "files": [{"path": str(f.path), "size": f.size} for f in dup.files],
+            })
+
+        for f in sorted(scan_result.temp_files, key=lambda f: f.size, reverse=True)[:100]:
+            report_data["temp_files"].append({
+                "name": f.name,
+                "size": f.size,
+                "size_human": format_size(f.size),
+                "path": str(f.path),
+            })
+
+        if output_path:
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(report_data, f, ensure_ascii=False, indent=2)
+            print(f"扫描报告(JSON)已导出到: {output_path}")
+
+        return report_data
+
+    @staticmethod
+    def generate_organize_report_json(
+        plan: Plan,
+        move_log: MoveLog,
+        output_path: Optional[Path] = None,
+        scan_result: Optional[ScanResult] = None,
+        plan_id: Optional[str] = None,
+    ) -> dict:
+        import json
+
+        success_count = sum(1 for a in move_log.actions if a.status == "success")
+        failed_count = sum(1 for a in move_log.actions if a.status == "failed")
+        moved_size = sum(a.file_size for a in move_log.actions if a.status == "success")
+
+        report_data = {
+            "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "execution": {
+                "log_id": move_log.log_id,
+                "source": move_log.source,
+                "plan_id": move_log.plan_id or plan_id,
+                "timestamp": move_log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                "success_count": success_count,
+                "failed_count": failed_count,
+                "moved_size": moved_size,
+                "moved_size_human": format_size(moved_size),
+            },
+            "plan": {
+                "total_actions": plan.total_actions,
+                "total_size": plan.total_size,
+                "total_size_human": format_size(plan.total_size),
+            },
+            "category_stats": [],
+            "actions": [],
+        }
+
+        for category in sorted(plan.categories.keys(), key=lambda c: len(plan.categories[c]), reverse=True):
+            actions = plan.categories[category]
+            cat_size = sum(a.file_size for a in actions)
+            cat_name = DEFAULT_CATEGORIES.get(category, {}).get("name", category)
+            report_data["category_stats"].append({
+                "category": category,
+                "name": cat_name,
+                "count": len(actions),
+                "size": cat_size,
+                "size_human": format_size(cat_size),
+            })
+
+        for action in plan.actions:
+            report_data["actions"].append({
+                "source": str(action.source),
+                "destination": str(action.destination),
+                "size": action.file_size,
+                "size_human": format_size(action.file_size),
+                "status": action.status,
+            })
+
+        if scan_result:
+            report_data["savings"] = {
+                "duplicates": {
+                    "count": len(scan_result.duplicates),
+                    "size": scan_result.duplicates_size,
+                    "size_human": format_size(scan_result.duplicates_size),
+                },
+                "temp_files": {
+                    "count": len(scan_result.temp_files),
+                    "size": scan_result.temp_size,
+                    "size_human": format_size(scan_result.temp_size),
+                },
+                "empty_dirs": {
+                    "count": len(scan_result.empty_dirs),
+                },
+                "total_recoverable": scan_result.duplicates_size + scan_result.temp_size,
+                "total_recoverable_human": format_size(scan_result.duplicates_size + scan_result.temp_size),
+            }
+
+        if output_path:
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(report_data, f, ensure_ascii=False, indent=2)
+            print(f"整理报告(JSON)已导出到: {output_path}")
+
+        return report_data
+
+    @staticmethod
     def print_summary(scan_result: ScanResult) -> None:
         total_space = scan_result.total_size
         recoverable = scan_result.duplicates_size + scan_result.temp_size
         percent = (recoverable / total_space * 100) if total_space > 0 else 0
 
         print(f"\n{'='*70}")
-        print(f"📊 空间节省总结")
+        print(f"[STATS] 空间节省总结")
         print(f"{'='*70}")
         print(f"总文件数: {scan_result.total_count:>8} 个")
         print(f"总空间占用: {format_size(total_space):>10}")

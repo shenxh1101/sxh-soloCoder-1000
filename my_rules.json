@@ -1,0 +1,30 @@
+{
+  "categories": {
+    "work_documents": {
+      "name": "工作文档",
+      "target_dir": "Work",
+      "extensions": [".docx", ".xlsx", ".pptx", ".pdf"],
+      "patterns": ["*report*", "*meeting*", "*工作*", "*项目*"],
+      "regex_patterns": ["^\\d{4}-\\d{2}-\\d{2}.*"]
+    },
+    "personal_photos": {
+      "name": "个人照片",
+      "target_dir": "Photos/Personal",
+      "extensions": [".jpg", ".jpeg", ".png", ".heic"],
+      "patterns": ["*family*", "*vacation*", "*生日*", "*旅行*"]
+    }
+  },
+  "temp_patterns": [
+    "^~\\$.*",
+    "^~lock.*",
+    ".*\\.bak$",
+    ".*\\.old$"
+  ],
+  "exclude_dirs": [
+    "node_modules",
+    ".git",
+    "venv",
+    "__pycache__",
+    "我的重要文件"
+  ]
+}

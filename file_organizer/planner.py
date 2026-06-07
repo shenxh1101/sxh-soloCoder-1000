@@ -7,6 +7,7 @@ from collections import defaultdict
 
 from .models import FileInfo, ScanResult, MoveAction, Plan, format_size
 from .config import DEFAULT_CATEGORIES, get_target_dir
+from .rule_manager import RuleSet
 
 
 class PlanGenerator:
@@ -21,6 +22,7 @@ class PlanGenerator:
         exclude_categories: Optional[List[str]] = None,
         include_temp: bool = False,
         dry_run: bool = True,
+        rules: Optional[RuleSet] = None,
     ):
         self.scan_result = scan_result
         self.target_root = Path(target_root)
@@ -31,6 +33,7 @@ class PlanGenerator:
         self.exclude_categories = exclude_categories or []
         self.include_temp = include_temp
         self.dry_run = dry_run
+        self.rules = rules
         self._existing_files: set = set()
         self._init_existing_files()
 
@@ -91,6 +94,8 @@ class PlanGenerator:
 
         if category in self.custom_rules and "target_dir" in self.custom_rules[category]:
             base_dir = self.custom_rules[category]["target_dir"]
+        elif self.rules:
+            base_dir = self.rules.get_target_dir(category)
         else:
             base_dir = get_target_dir(category)
 

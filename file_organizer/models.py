@@ -95,11 +95,15 @@ class MoveLog:
     timestamp: datetime
     actions: List[MoveAction] = field(default_factory=list)
     log_id: str = ""
+    source: str = "direct"
+    plan_id: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {
             "log_id": self.log_id,
             "timestamp": self.timestamp.isoformat(),
+            "source": self.source,
+            "plan_id": self.plan_id,
             "actions": [
                 {
                     "source": str(a.source),
@@ -116,6 +120,8 @@ class MoveLog:
         return cls(
             log_id=data["log_id"],
             timestamp=datetime.fromisoformat(data["timestamp"]),
+            source=data.get("source", "direct"),
+            plan_id=data.get("plan_id"),
             actions=[
                 MoveAction(
                     source=Path(a["source"]),

@@ -1,18 +1,14 @@
 import os
 import hashlib
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Callable
 from collections import defaultdict
 
 from .models import FileInfo, ScanResult, DuplicateGroup, format_size
-from .config import (
-    DEFAULT_EXCLUDE_DIRS,
-    is_temporary_file,
-    get_category_by_extension,
-    get_category_by_name,
-    match_name_pattern,
-)
+from .config import DEFAULT_EXCLUDE_DIRS, match_name_pattern
+from .rule_manager import RuleSet
 
 
 class Scanner:
@@ -30,9 +26,11 @@ class Scanner:
         detect_empty: bool = True,
         detect_temp: bool = True,
         progress_callback: Optional[Callable[[int, int], None]] = None,
+        rules: Optional[RuleSet] = None,
     ):
         self.root_dir = Path(root_dir)
-        self.exclude_dirs = exclude_dirs or DEFAULT_EXCLUDE_DIRS
+        self.rules = rules
+        self.exclude_dirs = exclude_dirs or (rules.exclude_dirs if rules else DEFAULT_EXCLUDE_DIRS)
         self.min_size = min_size
         self.max_size = max_size
         self.file_types = file_types
@@ -99,12 +97,18 @@ class Scanner:
         try:
             stat = filepath.stat()
             ext = filepath.suffix.lower()
-            is_temp = is_temporary_file(filepath.name)
 
-            name_category = get_category_by_name(filepath.name)
-            ext_category = get_category_by_extension(ext)
+            if self.rules:
+                is_temp = self.rules.is_temporary_file(filepath.name)
+                name_category = self.rules.get_category_by_name(filepath.name)
+                ext_category = self.rules.get_category_by_extension(ext)
+            else:
+                from .config import is_temporary_file, get_category_by_extension, get_category_by_name
+                is_temp = is_temporary_file(filepath.name)
+                name_category = get_category_by_name(filepath.name)
+                ext_category = get_category_by_extension(ext)
+
             category = name_category or ext_category or "other"
-
             file_type = category
 
             return FileInfo(

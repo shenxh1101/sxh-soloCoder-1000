@@ -36,7 +36,7 @@ DEFAULT_CATEGORIES: Dict[str, Dict] = {
     },
     "screenshots": {
         "name": "截图",
-        "patterns": [
+        "regex_patterns": [
             r"^屏幕截图.*",
             r"^Screenshot.*",
             r"^截图.*",
@@ -48,7 +48,7 @@ DEFAULT_CATEGORIES: Dict[str, Dict] = {
     },
     "downloads": {
         "name": "下载",
-        "patterns": [
+        "regex_patterns": [
             r".*\(\d+\)\.\w+$",
         ],
         "target_dir": "Downloads",
@@ -66,7 +66,9 @@ DEFAULT_CATEGORIES: Dict[str, Dict] = {
 }
 
 TEMP_PATTERNS: List[Pattern] = [
-    re.compile(r"^~$.*", re.IGNORECASE),
+    re.compile(r"^~\$.*", re.IGNORECASE),
+    re.compile(r"^~lock.*", re.IGNORECASE),
+    re.compile(r"^~.*\.tmp$", re.IGNORECASE),
     re.compile(r".*\.tmp$", re.IGNORECASE),
     re.compile(r".*\.temp$", re.IGNORECASE),
     re.compile(r".*\.bak$", re.IGNORECASE),
@@ -104,6 +106,10 @@ def is_temporary_file(filename: str) -> bool:
 def match_name_pattern(filename: str, patterns: List[str]) -> bool:
     return any(re.match(pattern, filename, re.IGNORECASE) for pattern in patterns)
 
+def match_glob_pattern(filename: str, patterns: List[str]) -> bool:
+    import fnmatch
+    return any(fnmatch.fnmatch(filename, pattern) for pattern in patterns)
+
 def get_category_by_extension(ext: str) -> str:
     ext_lower = ext.lower()
     for category, config in DEFAULT_CATEGORIES.items():
@@ -113,7 +119,9 @@ def get_category_by_extension(ext: str) -> str:
 
 def get_category_by_name(filename: str) -> str:
     for category, config in DEFAULT_CATEGORIES.items():
-        if "patterns" in config and match_name_pattern(filename, config["patterns"]):
+        if "regex_patterns" in config and match_name_pattern(filename, config["regex_patterns"]):
+            return category
+        if "patterns" in config and match_glob_pattern(filename, config["patterns"]):
             return category
     return ""
 
