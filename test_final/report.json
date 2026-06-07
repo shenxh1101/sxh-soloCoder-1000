@@ -1,0 +1,118 @@
+{
+  "generated_at": "2026-06-08 02:02:56",
+  "execution": {
+    "log_id": "20260608_020256_3595f03a",
+    "source": "plan",
+    "plan_id": "20260608_020256_f208f6a0",
+    "config_file": "D:\\code\\TraeProjects\\1000\\test_final\\config.json",
+    "timestamp": "2026-06-08 02:02:56",
+    "success_count": 4,
+    "failed_count": 0,
+    "skipped_count": 0,
+    "moved_size": 36,
+    "moved_size_human": "36 B",
+    "skipped_size": 0,
+    "skipped_size_human": "0 B",
+    "failed_size": 0,
+    "failed_size_human": "0 B"
+  },
+  "plan": {
+    "total_actions": 4,
+    "total_size": 36,
+    "total_size_human": "36 B"
+  },
+  "category_stats": [
+    {
+      "category": "documents",
+      "name": "文档",
+      "count": 2,
+      "size": 24,
+      "size_human": "24 B"
+    },
+    {
+      "category": "images",
+      "name": "图片",
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B"
+    },
+    {
+      "category": "videos",
+      "name": "视频",
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B"
+    },
+    {
+      "category": "personal_photos",
+      "name": "personal_photos",
+      "count": 0,
+      "size": 0,
+      "size_human": "0 B"
+    }
+  ],
+  "details": {
+    "successful": [
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\report.docx",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\report.docx",
+        "size": 12,
+        "size_human": "12 B",
+        "category": "documents",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\~$temp.docx",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\~$temp.docx",
+        "size": 12,
+        "size_human": "12 B",
+        "category": "documents",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\vacation.jpg",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Images\\vacation.jpg",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "images",
+        "note": null
+      },
+      {
+        "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\video.mp4",
+        "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Videos\\video.mp4",
+        "size": 6,
+        "size_human": "6 B",
+        "category": "videos",
+        "note": null
+      }
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "savings": {
+    "duplicates": {
+      "count": 0,
+      "size": 0,
+      "size_human": "0 B"
+    },
+    "temp_files": {
+      "count": 1,
+      "size": 12,
+      "size_human": "12 B"
+    },
+    "empty_dirs": {
+      "count": 0
+    },
+    "total_recoverable": 12,
+    "total_recoverable_human": "12 B"
+  },
+  "filter_excluded": [
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\installer.exe",
+      "filename": "installer.exe",
+      "category": "programs",
+      "file_size": 9,
+      "exclude_reason": "匹配跳过关键词: *.exe"
+    }
+  ]
+}

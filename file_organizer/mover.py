@@ -44,15 +44,32 @@ class FileMover:
 
         for action in self.plan.actions:
             action.status = "pending"
+            action.error = None
+            action.skip_reason = None
+
             if not simulate:
                 try:
                     self._move_file(action)
                     action.status = "success"
+                except FileNotFoundError as e:
+                    action.status = "skipped"
+                    action.skip_reason = f"源文件不存在: {str(e)}"
+                except FileExistsError as e:
+                    action.status = "failed"
+                    action.error = f"目标文件已存在且无法自动重命名: {str(e)}"
                 except Exception as e:
                     action.status = "failed"
                     action.error = str(e)
             else:
-                action.status = "simulated"
+                try:
+                    self._simulate_move(action)
+                    action.status = "simulated"
+                except FileNotFoundError as e:
+                    action.status = "skipped"
+                    action.skip_reason = f"源文件不存在: {str(e)}"
+                except Exception as e:
+                    action.status = "failed"
+                    action.error = str(e)
 
             self.current_log.actions.append(action)
             completed += 1
@@ -65,6 +82,19 @@ class FileMover:
 
         return self.current_log
 
+    def _simulate_move(self, action: MoveAction) -> None:
+        source = action.source
+        destination = action.destination
+
+        if not source.exists():
+            raise FileNotFoundError(f"源文件不存在: {source}")
+
+        if destination.exists():
+            new_dest = self._resolve_conflict(destination)
+            if new_dest != destination:
+                action.destination = new_dest
+                action.skip_reason = f"目标文件已存在，将自动重命名为: {new_dest.name}"
+
     def _move_file(self, action: MoveAction) -> None:
         source = action.source
         destination = action.destination
@@ -74,9 +104,12 @@ class FileMover:
 
         destination.parent.mkdir(parents=True, exist_ok=True)
 
+        original_dest = destination
         if destination.exists():
             destination = self._resolve_conflict(destination)
             action.destination = destination
+            if original_dest != destination:
+                action.skip_reason = f"目标文件已存在，自动重命名为: {destination.name}"
 
         shutil.move(str(source), str(destination))
 
@@ -155,6 +188,7 @@ class FileMover:
     def print_execution_summary(log: MoveLog, simulate: bool = False) -> None:
         success_count = sum(1 for a in log.actions if a.status in ("success", "simulated"))
         failed_count = sum(1 for a in log.actions if a.status == "failed")
+        skipped_count = sum(1 for a in log.actions if a.status == "skipped")
         total_size = sum(a.file_size for a in log.actions if a.status in ("success", "simulated"))
 
         mode = "模拟执行" if simulate else "实际执行"
@@ -171,14 +205,29 @@ class FileMover:
         print(f"-" * 70)
         print(f"成功: {success_count} 个")
         print(f"失败: {failed_count} 个")
+        print(f"跳过: {skipped_count} 个")
         print(f"移动总大小: {format_size(total_size)}")
         print(f"{'='*70}")
+
+        if skipped_count > 0:
+            print(f"\n跳过的文件:")
+            for action in log.actions:
+                if action.status == "skipped":
+                    print(f"  [SKIP] {action.source.name}: {action.skip_reason}")
 
         if failed_count > 0:
             print(f"\n失败的文件:")
             for action in log.actions:
                 if action.status == "failed":
-                    print(f"  - {action.source}: {action.error}")
+                    print(f"  [FAIL] {action.source.name}: {action.error}")
+
+        renamed_count = sum(1 for a in log.actions if a.skip_reason and "自动重命名" in a.skip_reason)
+        if renamed_count > 0:
+            print(f"\n自动重命名的文件:")
+            for action in log.actions:
+                if action.skip_reason and "自动重命名" in action.skip_reason:
+                    status_icon = "[SIM]" if action.status == "simulated" else "[OK]"
+                    print(f"  {status_icon} {action.source.name} -> {action.destination.name}")
 
         print()
 

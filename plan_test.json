@@ -1,0 +1,598 @@
+{
+  "plan_id": "20260608_014208_8db919b2",
+  "generated_at": "2026-06-08T01:42:08.834803",
+  "config_file": "my_rules.json",
+  "summary": {
+    "total_actions": 13,
+    "total_size": 182,
+    "total_size_human": "182 B"
+  },
+  "skipped_categories": [],
+  "skipped_files": [],
+  "actions": [
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\archive.zip",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Archives\\archive.zip",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\song.mp3",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Audio\\song.mp3",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\script.py",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Code\\script.py",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\~$draft.doc",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Documents\\~$draft.doc",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\temp.tmp",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Other\\temp.tmp",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\photo.jpg",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\photo.jpg",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\Screenshot_2024.png",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\Screenshot_2024.png",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\vacation.png",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\vacation.png",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\video.mp4",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Videos\\video.mp4",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\2024-01-01_meeting.docx",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\2024-01-01_meeting.docx",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\document.pdf",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\document.pdf",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\report_2024.docx",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\report_2024.docx",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_full\\~lock.xlsx",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\~lock.xlsx",
+      "file_size": 14,
+      "file_size_human": "14 B",
+      "skipped": false
+    }
+  ],
+  "categories": {
+    "work_documents": {
+      "count": 4,
+      "size": 56,
+      "size_human": "56 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\2024-01-01_meeting.docx",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\2024-01-01_meeting.docx",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\document.pdf",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\document.pdf",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\report_2024.docx",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\report_2024.docx",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\~lock.xlsx",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Work\\~lock.xlsx",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "archives": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\archive.zip",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Archives\\archive.zip",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "personal_photos": {
+      "count": 3,
+      "size": 42,
+      "size_human": "42 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\photo.jpg",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\photo.jpg",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\Screenshot_2024.png",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\Screenshot_2024.png",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\vacation.png",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Photos\\Personal\\vacation.png",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "code": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\script.py",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Code\\script.py",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "audio": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\song.mp3",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Audio\\song.mp3",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "other": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\temp.tmp",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Other\\temp.tmp",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "videos": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\video.mp4",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Videos\\video.mp4",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    },
+    "documents": {
+      "count": 1,
+      "size": 14,
+      "size_human": "14 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_full\\~$draft.doc",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_full_organized\\Documents\\~$draft.doc",
+          "file_size": 14,
+          "file_size_human": "14 B",
+          "skipped": false
+        }
+      ]
+    }
+  },
+  "scan_result": {
+    "files": [
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\2024-01-01_meeting.docx",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.688339",
+        "modified": "2026-06-08T01:18:22.607761",
+        "extension": ".docx",
+        "file_type": "work_documents",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "work_documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\archive.zip",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.688339",
+        "modified": "2026-06-08T01:18:22.604160",
+        "extension": ".zip",
+        "file_type": "archives",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "archives"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\document.pdf",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.689461",
+        "modified": "2026-06-08T01:18:22.593726",
+        "extension": ".pdf",
+        "file_type": "work_documents",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "work_documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\photo.jpg",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.689461",
+        "modified": "2026-06-08T01:18:22.594726",
+        "extension": ".jpg",
+        "file_type": "personal_photos",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "personal_photos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\report_2024.docx",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.689461",
+        "modified": "2026-06-08T01:18:22.593726",
+        "extension": ".docx",
+        "file_type": "work_documents",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "work_documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\Screenshot_2024.png",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.690465",
+        "modified": "2026-06-08T01:18:22.607761",
+        "extension": ".png",
+        "file_type": "personal_photos",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "personal_photos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\script.py",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.690465",
+        "modified": "2026-06-08T01:18:22.604160",
+        "extension": ".py",
+        "file_type": "code",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "code"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\song.mp3",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.690465",
+        "modified": "2026-06-08T01:18:22.604160",
+        "extension": ".mp3",
+        "file_type": "audio",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "audio"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\temp.tmp",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.690465",
+        "modified": "2026-06-08T01:18:22.607761",
+        "extension": ".tmp",
+        "file_type": "other",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "other"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\vacation.png",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.691483",
+        "modified": "2026-06-08T01:18:22.603154",
+        "extension": ".png",
+        "file_type": "personal_photos",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "personal_photos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\video.mp4",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.691483",
+        "modified": "2026-06-08T01:18:22.603154",
+        "extension": ".mp4",
+        "file_type": "videos",
+        "is_temporary": false,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "videos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\~$draft.doc",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.693111",
+        "modified": "2026-06-08T01:18:22.607186",
+        "extension": ".doc",
+        "file_type": "documents",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\~lock.xlsx",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.694130",
+        "modified": "2026-06-08T01:18:22.607694",
+        "extension": ".xlsx",
+        "file_type": "work_documents",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "work_documents"
+      }
+    ],
+    "empty_dirs": [
+      "D:\\code\\TraeProjects\\1000\\test_full\\empty_subdir"
+    ],
+    "duplicates": [
+      {
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "files": [
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\document.pdf",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.689461",
+            "modified": "2026-06-08T01:18:22.593726",
+            "extension": ".pdf",
+            "file_type": "work_documents",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "work_documents"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\report_2024.docx",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.689461",
+            "modified": "2026-06-08T01:18:22.593726",
+            "extension": ".docx",
+            "file_type": "work_documents",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "work_documents"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\photo.jpg",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.689461",
+            "modified": "2026-06-08T01:18:22.594726",
+            "extension": ".jpg",
+            "file_type": "personal_photos",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "personal_photos"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\vacation.png",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.691483",
+            "modified": "2026-06-08T01:18:22.603154",
+            "extension": ".png",
+            "file_type": "personal_photos",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "personal_photos"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\video.mp4",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.691483",
+            "modified": "2026-06-08T01:18:22.603154",
+            "extension": ".mp4",
+            "file_type": "videos",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "videos"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\archive.zip",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.688339",
+            "modified": "2026-06-08T01:18:22.604160",
+            "extension": ".zip",
+            "file_type": "archives",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "archives"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\script.py",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.690465",
+            "modified": "2026-06-08T01:18:22.604160",
+            "extension": ".py",
+            "file_type": "code",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "code"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\song.mp3",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.690465",
+            "modified": "2026-06-08T01:18:22.604160",
+            "extension": ".mp3",
+            "file_type": "audio",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "audio"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\~$draft.doc",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.693111",
+            "modified": "2026-06-08T01:18:22.607186",
+            "extension": ".doc",
+            "file_type": "documents",
+            "is_temporary": true,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "documents"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\~lock.xlsx",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.694130",
+            "modified": "2026-06-08T01:18:22.607694",
+            "extension": ".xlsx",
+            "file_type": "work_documents",
+            "is_temporary": true,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "work_documents"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\2024-01-01_meeting.docx",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.688339",
+            "modified": "2026-06-08T01:18:22.607761",
+            "extension": ".docx",
+            "file_type": "work_documents",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "work_documents"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\Screenshot_2024.png",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.690465",
+            "modified": "2026-06-08T01:18:22.607761",
+            "extension": ".png",
+            "file_type": "personal_photos",
+            "is_temporary": false,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "personal_photos"
+          },
+          {
+            "path": "D:\\code\\TraeProjects\\1000\\test_full\\temp.tmp",
+            "size": 14,
+            "created": "2026-06-08T01:42:08.690465",
+            "modified": "2026-06-08T01:18:22.607761",
+            "extension": ".tmp",
+            "file_type": "other",
+            "is_temporary": true,
+            "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+            "category": "other"
+          }
+        ]
+      }
+    ],
+    "temp_files": [
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\temp.tmp",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.690465",
+        "modified": "2026-06-08T01:18:22.607761",
+        "extension": ".tmp",
+        "file_type": "other",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "other"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\~$draft.doc",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.693111",
+        "modified": "2026-06-08T01:18:22.607186",
+        "extension": ".doc",
+        "file_type": "documents",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_full\\~lock.xlsx",
+        "size": 14,
+        "created": "2026-06-08T01:42:08.694130",
+        "modified": "2026-06-08T01:18:22.607694",
+        "extension": ".xlsx",
+        "file_type": "work_documents",
+        "is_temporary": true,
+        "file_hash": "c34652066a18513105ac1ab96fcbef8e",
+        "category": "work_documents"
+      }
+    ],
+    "excluded": []
+  }
+}

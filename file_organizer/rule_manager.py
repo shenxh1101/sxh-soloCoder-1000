@@ -297,6 +297,163 @@ class RuleSet:
 
         return result
 
+    def classify(self, filename: str, ext: Optional[str] = None) -> Dict:
+        result = {
+            "filename": filename,
+            "extension": ext,
+            "category": None,
+            "category_source": None,
+            "match_type": None,
+            "match_pattern": None,
+            "target_dir": None,
+            "match_chain": [],
+        }
+
+        user_categories = [(k, v) for k, v in self.categories.items() if v.get("source") == "user"]
+        builtin_categories = [(k, v) for k, v in self.categories.items() if v.get("source") != "user"]
+
+        if ext:
+            ext_lower = ext.lower()
+            for category, config in user_categories:
+                if "extensions" in config and ext_lower in config["extensions"]:
+                    result["category"] = category
+                    result["category_source"] = config.get("source", "builtin")
+                    result["match_type"] = "extension"
+                    result["match_pattern"] = ext_lower
+                    result["target_dir"] = config.get("target_dir", "Other")
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "user",
+                        "matched": True,
+                        "priority": "highest",
+                    })
+                    return result
+                elif "extensions" in config:
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "user",
+                        "matched": False,
+                        "priority": "highest",
+                    })
+
+            for category, config in builtin_categories:
+                if "extensions" in config and ext_lower in config["extensions"]:
+                    result["category"] = category
+                    result["category_source"] = config.get("source", "builtin")
+                    result["match_type"] = "extension"
+                    result["match_pattern"] = ext_lower
+                    result["target_dir"] = config.get("target_dir", "Other")
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": True,
+                        "priority": "high",
+                    })
+                    return result
+                elif "extensions" in config:
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": False,
+                        "priority": "high",
+                    })
+
+        for category, config in user_categories:
+            if "regex_patterns" in config:
+                for pattern in config["regex_patterns"]:
+                    matched = re.match(pattern, filename, re.IGNORECASE) is not None
+                    result["match_chain"].append({
+                        "type": "regex",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "user",
+                        "matched": matched,
+                        "priority": "medium",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "regex"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+            if "patterns" in config:
+                for pattern in config["patterns"]:
+                    matched = fnmatch.fnmatch(filename, pattern)
+                    result["match_chain"].append({
+                        "type": "pattern",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "user",
+                        "matched": matched,
+                        "priority": "medium",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "pattern"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+
+        for category, config in builtin_categories:
+            if "regex_patterns" in config:
+                for pattern in config["regex_patterns"]:
+                    matched = re.match(pattern, filename, re.IGNORECASE) is not None
+                    result["match_chain"].append({
+                        "type": "regex",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": matched,
+                        "priority": "low",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "regex"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+            if "patterns" in config:
+                for pattern in config["patterns"]:
+                    matched = fnmatch.fnmatch(filename, pattern)
+                    result["match_chain"].append({
+                        "type": "pattern",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": matched,
+                        "priority": "low",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "pattern"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+
+        result["category"] = "other"
+        result["match_type"] = "default"
+        result["target_dir"] = "Other"
+        result["match_chain"].append({
+            "type": "default",
+            "category": "other",
+            "source": "builtin",
+            "matched": True,
+            "priority": "lowest",
+        })
+        return result
+
     def get_target_dir(self, category: str) -> str:
         if category in self.categories and "target_dir" in self.categories[category]:
             return self.categories[category]["target_dir"]
@@ -372,6 +529,12 @@ class RuleManager:
 
         if "categories" in user_config:
             self._merge_categories(merged, user_config["categories"])
+
+        if "custom_extensions" in user_config:
+            self._merge_custom_extensions(merged, user_config["custom_extensions"])
+
+        if "target_dirs" in user_config:
+            self._merge_target_dirs(merged, user_config["target_dirs"])
 
         if "temp_patterns" in user_config:
             self._merge_temp_patterns(merged, user_config["temp_patterns"])
@@ -527,6 +690,68 @@ class RuleManager:
                 merged.exclude_dirs.append(dirname)
                 existing.add(dirname)
                 merged._exclude_dir_sources[dirname] = "user"
+
+    def _merge_custom_extensions(self, merged: RuleSet, custom_extensions: dict):
+        for ext, category in custom_extensions.items():
+            ext_lower = ext.lower()
+            if not ext_lower.startswith('.'):
+                ext_lower = '.' + ext_lower
+
+            if category not in merged.categories:
+                merged.categories[category] = {
+                    "name": category,
+                    "target_dir": category,
+                    "extensions": [],
+                    "source": "user",
+                }
+
+            cat_config = merged.categories[category]
+            if "extensions" not in cat_config:
+                cat_config["extensions"] = []
+
+            if ext_lower not in cat_config["extensions"]:
+                for other_cat, other_config in merged.categories.items():
+                    if other_cat != category and ext_lower in other_config.get("extensions", []):
+                        merged.conflicts.append(RuleConflict(
+                            type="extension_conflict",
+                            category=category,
+                            key=f"custom_ext:{ext_lower}",
+                            builtin_value=f"属于 {other_cat}",
+                            user_value=f"属于 {category}",
+                            resolved=category,
+                            resolution="用户自定义扩展名优先，移至用户指定分类",
+                        ))
+                        other_config["extensions"] = [
+                            e for e in other_config.get("extensions", []) if e != ext_lower
+                        ]
+
+                cat_config["extensions"].append(ext_lower)
+                cat_config["source"] = "user"
+
+    def _merge_target_dirs(self, merged: RuleSet, target_dirs: dict):
+        for category, target_dir in target_dirs.items():
+            if category not in merged.categories:
+                merged.categories[category] = {
+                    "name": category,
+                    "target_dir": target_dir,
+                    "extensions": [],
+                    "source": "user",
+                }
+
+            cat_config = merged.categories[category]
+            old_target = cat_config.get("target_dir", "")
+            if old_target != target_dir:
+                merged.conflicts.append(RuleConflict(
+                    type="category_target_dir",
+                    category=category,
+                    key="target_dir",
+                    builtin_value=old_target,
+                    user_value=target_dir,
+                    resolved=target_dir,
+                    resolution="用户自定义目标目录优先",
+                ))
+                cat_config["target_dir"] = target_dir
+                cat_config["source"] = "user"
 
     def print_conflicts(self, rules: RuleSet):
         if not rules.conflicts:

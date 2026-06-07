@@ -1,0 +1,214 @@
+{
+  "plan_id": "20260608_020256_f208f6a0",
+  "generated_at": "2026-06-08T02:02:56.579625",
+  "config_file": "D:\\code\\TraeProjects\\1000\\test_final\\config.json",
+  "summary": {
+    "total_actions": 5,
+    "total_size": 42,
+    "total_size_human": "42 B",
+    "filter_excluded_count": 1
+  },
+  "skipped_categories": [],
+  "skipped_files": [],
+  "actions": [
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\report.docx",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\report.docx",
+      "file_size": 12,
+      "file_size_human": "12 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\~$temp.docx",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\~$temp.docx",
+      "file_size": 12,
+      "file_size_human": "12 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\vacation.jpg",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Images\\vacation.jpg",
+      "file_size": 6,
+      "file_size_human": "6 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\Screenshot_2024.png",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Photos\\Personal\\Screenshot_2024.png",
+      "file_size": 6,
+      "file_size_human": "6 B",
+      "skipped": false
+    },
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\video.mp4",
+      "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Videos\\video.mp4",
+      "file_size": 6,
+      "file_size_human": "6 B",
+      "skipped": false
+    }
+  ],
+  "categories": {
+    "documents": {
+      "count": 2,
+      "size": 24,
+      "size_human": "24 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\report.docx",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\report.docx",
+          "file_size": 12,
+          "file_size_human": "12 B",
+          "skipped": false
+        },
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\~$temp.docx",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Documents\\~$temp.docx",
+          "file_size": 12,
+          "file_size_human": "12 B",
+          "skipped": false
+        }
+      ]
+    },
+    "personal_photos": {
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\Screenshot_2024.png",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Photos\\Personal\\Screenshot_2024.png",
+          "file_size": 6,
+          "file_size_human": "6 B",
+          "skipped": false
+        }
+      ]
+    },
+    "images": {
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\vacation.jpg",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Images\\vacation.jpg",
+          "file_size": 6,
+          "file_size_human": "6 B",
+          "skipped": false
+        }
+      ]
+    },
+    "videos": {
+      "count": 1,
+      "size": 6,
+      "size_human": "6 B",
+      "skipped": false,
+      "actions": [
+        {
+          "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\video.mp4",
+          "destination": "D:\\code\\TraeProjects\\1000\\test_final\\target\\Videos\\video.mp4",
+          "file_size": 6,
+          "file_size_human": "6 B",
+          "skipped": false
+        }
+      ]
+    }
+  },
+  "scan_result": {
+    "files": [
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\installer.exe",
+        "size": 9,
+        "created": "2026-06-08T02:02:56.382745",
+        "modified": "2026-06-08T02:02:56.382745",
+        "extension": ".exe",
+        "file_type": "programs",
+        "is_temporary": false,
+        "file_hash": null,
+        "category": "programs"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\report.docx",
+        "size": 12,
+        "created": "2026-06-08T02:02:56.382241",
+        "modified": "2026-06-08T02:02:56.382241",
+        "extension": ".docx",
+        "file_type": "documents",
+        "is_temporary": false,
+        "file_hash": null,
+        "category": "documents"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\Screenshot_2024.png",
+        "size": 6,
+        "created": "2026-06-08T02:02:56.382241",
+        "modified": "2026-06-08T02:02:56.382241",
+        "extension": ".png",
+        "file_type": "personal_photos",
+        "is_temporary": false,
+        "file_hash": null,
+        "category": "personal_photos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\vacation.jpg",
+        "size": 6,
+        "created": "2026-06-08T02:02:56.382241",
+        "modified": "2026-06-08T02:02:56.382745",
+        "extension": ".jpg",
+        "file_type": "images",
+        "is_temporary": false,
+        "file_hash": null,
+        "category": "images"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\video.mp4",
+        "size": 6,
+        "created": "2026-06-08T02:02:56.382745",
+        "modified": "2026-06-08T02:02:56.382745",
+        "extension": ".mp4",
+        "file_type": "videos",
+        "is_temporary": false,
+        "file_hash": null,
+        "category": "videos"
+      },
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\~$temp.docx",
+        "size": 12,
+        "created": "2026-06-08T02:02:56.382745",
+        "modified": "2026-06-08T02:02:56.382745",
+        "extension": ".docx",
+        "file_type": "documents",
+        "is_temporary": true,
+        "file_hash": null,
+        "category": "documents"
+      }
+    ],
+    "empty_dirs": [],
+    "duplicates": [],
+    "temp_files": [
+      {
+        "path": "D:\\code\\TraeProjects\\1000\\test_final\\source\\~$temp.docx",
+        "size": 12,
+        "created": "2026-06-08T02:02:56.382745",
+        "modified": "2026-06-08T02:02:56.382745",
+        "extension": ".docx",
+        "file_type": "documents",
+        "is_temporary": true,
+        "file_hash": null,
+        "category": "documents"
+      }
+    ],
+    "excluded": []
+  },
+  "filter_excluded": [
+    {
+      "source": "D:\\code\\TraeProjects\\1000\\test_final\\source\\installer.exe",
+      "filename": "installer.exe",
+      "category": "programs",
+      "file_size": 9,
+      "exclude_reason": "匹配跳过关键词: *.exe"
+    }
+  ]
+}

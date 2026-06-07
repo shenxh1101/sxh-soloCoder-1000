@@ -100,15 +100,15 @@ class Scanner:
 
             if self.rules:
                 is_temp = self.rules.is_temporary_file(filepath.name)
-                name_category = self.rules.get_category_by_name(filepath.name)
-                ext_category = self.rules.get_category_by_extension(ext)
+                classification = self.rules.classify(filepath.name, ext)
+                category = classification["category"]
             else:
                 from .config import is_temporary_file, get_category_by_extension, get_category_by_name
                 is_temp = is_temporary_file(filepath.name)
                 name_category = get_category_by_name(filepath.name)
                 ext_category = get_category_by_extension(ext)
+                category = name_category or ext_category or "other"
 
-            category = name_category or ext_category or "other"
             file_type = category
 
             return FileInfo(

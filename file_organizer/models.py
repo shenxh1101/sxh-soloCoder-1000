@@ -189,6 +189,8 @@ class MoveAction:
     action_type: str = "move"
     status: str = "pending"
     error: Optional[str] = None
+    skip_reason: Optional[str] = None
+    category: Optional[str] = None
 
 
 @dataclass
@@ -225,6 +227,9 @@ class MoveLog:
                     "destination": str(a.destination),
                     "file_size": a.file_size,
                     "status": a.status,
+                    "error": a.error,
+                    "skip_reason": a.skip_reason,
+                    "category": a.category,
                 }
                 for a in self.actions
             ],
@@ -242,7 +247,10 @@ class MoveLog:
                     source=Path(a["source"]),
                     destination=Path(a["destination"]),
                     file_size=a["file_size"],
-                    status=a["status"],
+                    status=a.get("status", "pending"),
+                    error=a.get("error"),
+                    skip_reason=a.get("skip_reason"),
+                    category=a.get("category"),
                 )
                 for a in data["actions"]
             ],
