@@ -40,13 +40,33 @@ class RuleSet:
 
     def get_category_by_extension(self, ext: str) -> str:
         ext_lower = ext.lower()
-        for category, config in self.categories.items():
+        user_categories = [(k, v) for k, v in self.categories.items() if v.get("source") == "user"]
+        builtin_categories = [(k, v) for k, v in self.categories.items() if v.get("source") != "user"]
+
+        for category, config in user_categories:
+            if "extensions" in config and ext_lower in config["extensions"]:
+                return category
+
+        for category, config in builtin_categories:
             if "extensions" in config and ext_lower in config["extensions"]:
                 return category
         return "other"
 
     def get_category_by_name(self, filename: str) -> str:
-        for category, config in self.categories.items():
+        user_categories = [(k, v) for k, v in self.categories.items() if v.get("source") == "user"]
+        builtin_categories = [(k, v) for k, v in self.categories.items() if v.get("source") != "user"]
+
+        for category, config in user_categories:
+            if "regex_patterns" in config:
+                for pattern in config["regex_patterns"]:
+                    if re.match(pattern, filename, re.IGNORECASE):
+                        return category
+            if "patterns" in config:
+                for pattern in config["patterns"]:
+                    if fnmatch.fnmatch(filename, pattern):
+                        return category
+
+        for category, config in builtin_categories:
             if "regex_patterns" in config:
                 for pattern in config["regex_patterns"]:
                     if re.match(pattern, filename, re.IGNORECASE):
@@ -56,6 +76,226 @@ class RuleSet:
                     if fnmatch.fnmatch(filename, pattern):
                         return category
         return ""
+
+    def explain_file(self, filename: str, ext: Optional[str] = None) -> Dict:
+        result = {
+            "filename": filename,
+            "extension": ext,
+            "is_temporary": False,
+            "temp_pattern": None,
+            "temp_pattern_source": None,
+            "category": None,
+            "category_source": None,
+            "match_type": None,
+            "match_pattern": None,
+            "target_dir": None,
+            "match_chain": [],
+        }
+
+        for pattern in self.temp_patterns:
+            if pattern.match(filename):
+                result["is_temporary"] = True
+                result["temp_pattern"] = pattern.pattern
+                result["temp_pattern_source"] = self._temp_pattern_sources.get(pattern.pattern, "builtin")
+                result["match_chain"].append({
+                    "type": "temp_file",
+                    "pattern": pattern.pattern,
+                    "source": result["temp_pattern_source"],
+                    "matched": True,
+                })
+                break
+            else:
+                result["match_chain"].append({
+                    "type": "temp_file",
+                    "pattern": pattern.pattern,
+                    "source": self._temp_pattern_sources.get(pattern.pattern, "builtin"),
+                    "matched": False,
+                })
+
+        user_categories = [(k, v) for k, v in self.categories.items() if v.get("source") == "user"]
+        builtin_categories = [(k, v) for k, v in self.categories.items() if v.get("source") != "user"]
+
+        if ext:
+            ext_lower = ext.lower()
+            for category, config in user_categories:
+                if "extensions" in config and ext_lower in config["extensions"]:
+                    result["category"] = category
+                    result["category_source"] = config.get("source", "builtin")
+                    result["match_type"] = "extension"
+                    result["match_pattern"] = ext_lower
+                    result["target_dir"] = config.get("target_dir", "Other")
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "user",
+                        "matched": True,
+                        "priority": "highest",
+                    })
+                    return result
+                elif "extensions" in config:
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "user",
+                        "matched": False,
+                        "priority": "highest",
+                    })
+
+            for category, config in builtin_categories:
+                if "extensions" in config and ext_lower in config["extensions"]:
+                    result["category"] = category
+                    result["category_source"] = config.get("source", "builtin")
+                    result["match_type"] = "extension"
+                    result["match_pattern"] = ext_lower
+                    result["target_dir"] = config.get("target_dir", "Other")
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": True,
+                        "priority": "high",
+                    })
+                    return result
+                elif "extensions" in config:
+                    result["match_chain"].append({
+                        "type": "extension",
+                        "pattern": ext_lower,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": False,
+                        "priority": "high",
+                    })
+
+        for category, config in user_categories:
+            if "regex_patterns" in config:
+                for pattern in config["regex_patterns"]:
+                    matched = re.match(pattern, filename, re.IGNORECASE) is not None
+                    result["match_chain"].append({
+                        "type": "regex",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "user",
+                        "matched": matched,
+                        "priority": "medium",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "regex"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+            if "patterns" in config:
+                for pattern in config["patterns"]:
+                    matched = fnmatch.fnmatch(filename, pattern)
+                    result["match_chain"].append({
+                        "type": "pattern",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "user",
+                        "matched": matched,
+                        "priority": "medium",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "pattern"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+
+        for category, config in builtin_categories:
+            if "regex_patterns" in config:
+                for pattern in config["regex_patterns"]:
+                    matched = re.match(pattern, filename, re.IGNORECASE) is not None
+                    result["match_chain"].append({
+                        "type": "regex",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": matched,
+                        "priority": "low",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "regex"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+            if "patterns" in config:
+                for pattern in config["patterns"]:
+                    matched = fnmatch.fnmatch(filename, pattern)
+                    result["match_chain"].append({
+                        "type": "pattern",
+                        "pattern": pattern,
+                        "category": category,
+                        "source": "builtin",
+                        "matched": matched,
+                        "priority": "low",
+                    })
+                    if matched:
+                        result["category"] = category
+                        result["category_source"] = config.get("source", "builtin")
+                        result["match_type"] = "pattern"
+                        result["match_pattern"] = pattern
+                        result["target_dir"] = config.get("target_dir", "Other")
+                        return result
+
+        result["category"] = "other"
+        result["match_type"] = "default"
+        result["target_dir"] = "Other"
+        result["match_chain"].append({
+            "type": "default",
+            "category": "other",
+            "source": "builtin",
+            "matched": True,
+            "priority": "lowest",
+        })
+        return result
+
+    def explain_extension(self, ext: str) -> Dict:
+        ext_lower = ext.lower()
+        if not ext_lower.startswith('.'):
+            ext_lower = '.' + ext_lower
+
+        result = {
+            "extension": ext_lower,
+            "builtin_category": None,
+            "user_category": None,
+            "final_category": None,
+            "final_source": None,
+            "conflict": False,
+            "target_dir": None,
+        }
+
+        user_categories = [(k, v) for k, v in self.categories.items() if v.get("source") == "user"]
+        builtin_categories = [(k, v) for k, v in self.categories.items() if v.get("source") != "user"]
+
+        for category, config in builtin_categories:
+            if "extensions" in config and ext_lower in config["extensions"]:
+                result["builtin_category"] = category
+                break
+
+        for category, config in user_categories:
+            if "extensions" in config and ext_lower in config["extensions"]:
+                result["user_category"] = category
+                result["final_category"] = category
+                result["final_source"] = "user"
+                result["target_dir"] = config.get("target_dir", "Other")
+                if result["builtin_category"] and result["builtin_category"] != category:
+                    result["conflict"] = True
+                return result
+
+        if result["builtin_category"]:
+            result["final_category"] = result["builtin_category"]
+            result["final_source"] = "builtin"
+            result["target_dir"] = self.categories[result["builtin_category"]].get("target_dir", "Other")
+
+        return result
 
     def get_target_dir(self, category: str) -> str:
         if category in self.categories and "target_dir" in self.categories[category]:

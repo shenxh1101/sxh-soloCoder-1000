@@ -250,7 +250,7 @@ def plan_command(
         planner.export_plan(plan, output)
 
     if output_json:
-        export_plan_json(plan, output_json, plan_id, skipped_categories, skipped_files, config_path)
+        export_plan_json(plan, output_json, plan_id, skipped_categories, skipped_files, config_path, result)
 
     save_confirmed_plan(plan, plan_id, skipped_categories, skipped_files, config_path, directory, result)
 
@@ -276,6 +276,7 @@ import uuid
 @click.option("--report-json", type=click.Path(path_type=Path), help="导出JSON格式整理报告")
 @click.option("--from-plan", "plan_id", is_flag=True, flag_value="last", help="使用上次生成的计划")
 @click.option("--plan-id", help="使用指定ID的计划")
+@click.option("--plan-file", type=click.Path(exists=True, dir_okay=False, path_type=Path), help="从指定JSON文件读取计划（支持手动修改）")
 @click.option("--config", "-c", "config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path), help="自定义规则配置文件 (JSON/YAML)")
 def move_command(
     directory: Optional[Path],
@@ -291,15 +292,23 @@ def move_command(
     report: Optional[Path],
     report_json: Optional[Path],
     plan_id: Optional[str],
+    plan_file: Optional[Path],
     config_path: Optional[Path],
 ):
     rule_manager = RuleManager()
     rules = rule_manager.load_config(config_path)
     result = None
     used_plan_id = None
+    plan_data = None
 
-    if plan_id:
-        plan_data = None
+    if plan_file:
+        click.echo(f"[FILE] 从外部文件加载计划: {plan_file}")
+        with open(plan_file, "r", encoding="utf-8") as f:
+            plan_data = json.load(f)
+        used_plan_id = plan_data.get("plan_id", "external")
+        if used_plan_id == "external":
+            used_plan_id = f"external_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    elif plan_id:
         if plan_id == "last":
             plan_data = load_confirmed_plan()
             if plan_data:
@@ -308,49 +317,95 @@ def move_command(
             plan_data = load_confirmed_plan(plan_id)
             used_plan_id = plan_id
 
-        if plan_data:
-            from .models import Plan, MoveAction
-            plan = Plan()
+    if plan_data:
+        from .models import Plan, MoveAction, ScanResult
+        plan = Plan()
 
-            plan_config_path = plan_data.get("config_file")
-            if plan_config_path and not config_path:
-                click.echo(f"[FILE] 加载计划关联的配置文件: {plan_config_path}")
-                rules = rule_manager.load_config(Path(plan_config_path))
-                rule_manager.print_conflicts(rules)
+        plan_config_path = plan_data.get("config_file")
+        if plan_config_path and not config_path:
+            click.echo(f"[FILE] 加载计划关联的配置文件: {plan_config_path}")
+            rules = rule_manager.load_config(Path(plan_config_path))
+            rule_manager.print_conflicts(rules)
 
-            for a in plan_data["actions"]:
+        if "scan_result" in plan_data:
+            result = ScanResult.from_dict(plan_data["scan_result"])
+            click.echo(f"[INFO] 使用计划保存的扫描结果: {result.total_count} 个文件")
+
+        if "skipped" in plan_data:
+            skipped_categories_from_plan = set(plan_data["skipped"].get("categories", []))
+            skipped_files_from_plan = set(plan_data["skipped"].get("files", []))
+        else:
+            skipped_categories_from_plan = set(plan_data.get("skipped_categories", []))
+            skipped_files_from_plan = set(plan_data.get("skipped_files", []))
+
+        total_actions = len(plan_data["actions"])
+        skipped_count = 0
+
+        for a in plan_data["actions"]:
+            action_skipped = a.get("skipped", False) or \
+                            str(a["source"]) in skipped_files_from_plan
+
+            if action_skipped:
+                skipped_count += 1
+                continue
+
+            action = MoveAction(
+                source=Path(a["source"]),
+                destination=Path(a["destination"]),
+                file_size=a["file_size"],
+            )
+            plan.actions.append(action)
+
+        for cat, cat_data in plan_data.get("categories", {}).items():
+            if cat not in plan.categories:
+                plan.categories[cat] = []
+            
+            if isinstance(cat_data, dict) and "actions" in cat_data:
+                actions_data = cat_data["actions"]
+            else:
+                actions_data = cat_data
+            
+            for a in actions_data:
+                action_skipped = a.get("skipped", False) or \
+                                str(a["source"]) in skipped_files_from_plan or \
+                                cat in skipped_categories_from_plan
+
+                if action_skipped:
+                    continue
+
                 action = MoveAction(
                     source=Path(a["source"]),
                     destination=Path(a["destination"]),
                     file_size=a["file_size"],
                 )
-                plan.actions.append(action)
+                plan.categories[cat].append(action)
 
-            for cat, actions_data in plan_data.get("categories", {}).items():
-                if cat not in plan.categories:
-                    plan.categories[cat] = []
-                for a in actions_data:
-                    action = MoveAction(
-                        source=Path(a["source"]),
-                        destination=Path(a["destination"]),
-                        file_size=a["file_size"],
-                    )
-                    plan.categories[cat].append(action)
+        if plan.actions:
+            target = plan.actions[0].destination.parent.parent
 
-            if plan.actions:
-                target = plan.actions[0].destination.parent.parent
+        click.echo(f"\n[PLAN] 使用计划 {used_plan_id}")
+        click.echo(f"   计划总数: {total_actions} 个文件")
+        click.echo(f"   将移动: {plan.total_actions} 个文件")
+        click.echo(f"   将跳过: {skipped_count} 个文件")
+        if skipped_categories_from_plan:
+            click.echo(f"   跳过分类: {', '.join(skipped_categories_from_plan)}")
+        if skipped_files_from_plan:
+            click.echo(f"   跳过文件: {len(skipped_files_from_plan)} 个")
 
-            click.echo(f"\n[PLAN] 使用计划 {used_plan_id}，共 {plan.total_actions} 个文件")
-            if plan_data.get("skipped_categories"):
-                click.echo(f"   已跳过分类: {', '.join(plan_data['skipped_categories'])}")
-            if plan_data.get("skipped_files"):
-                click.echo(f"   已跳过文件: {len(plan_data['skipped_files'])} 个")
+        click.echo()
+        if not yes:
+            confirm = click.confirm(f"确认执行以上计划? (将移动 {plan.total_actions} 个文件，跳过 {skipped_count} 个)", default=False)
+            if not confirm:
+                click.echo("已取消")
+                return
+    elif plan_id or plan_file:
+        if plan_file:
+            click.echo("[X] 未从外部文件加载到计划数据")
+        elif plan_id == "last":
+            click.echo("[X] 未找到确认过的计划，请先运行 plan 命令并完成确认")
         else:
-            if plan_id == "last":
-                click.echo("[X] 未找到确认过的计划，请先运行 plan 命令并完成确认")
-            else:
-                click.echo(f"[X] 未找到计划 {plan_id}")
-            sys.exit(1)
+            click.echo(f"[X] 未找到计划 {plan_id}")
+        sys.exit(1)
     else:
         if not directory or not target:
             click.echo("[X] 请指定源目录和目标目录，或使用 --from-plan")
@@ -416,27 +471,14 @@ def move_command(
     log = mover.execute(simulate=simulate, source=execute_source, plan_id=used_plan_id)
     FileMover.print_execution_summary(log, simulate=simulate)
 
-    if not simulate:
-        if report or report_json:
-            if result is None:
-                source_dirs = set()
-                for a in plan.actions:
-                    try:
-                        source_dirs.add(a.source.parents[2])
-                    except (IndexError, Exception):
-                        pass
-                if source_dirs:
-                    scan_dir = list(source_dirs)[0]
-                    scanner = Scanner(root_dir=scan_dir, rules=rules)
-                    result = scanner.scan()
+    if report or report_json:
+        if report:
+            Reporter.generate_organize_report(plan, log, report)
+            if result:
+                Reporter.generate_savings_report(result, log, report.with_name(report.stem + "_savings" + report.suffix))
 
-            if report:
-                Reporter.generate_organize_report(plan, log, report)
-                if result:
-                    Reporter.generate_savings_report(result, log, report.with_name(report.stem + "_savings" + report.suffix))
-
-            if report_json:
-                Reporter.generate_organize_report_json(plan, log, report_json, result, used_plan_id)
+        if report_json:
+            Reporter.generate_organize_report_json(plan, log, report_json, result, used_plan_id)
 
 
 @cli.command("undo", help="回滚上次整理操作")
@@ -498,12 +540,14 @@ def undo_command(
 @click.option("--show-excludes", is_flag=True, help="显示默认排除目录")
 @click.option("--show-temp-patterns", is_flag=True, help="显示临时文件匹配规则")
 @click.option("--show-conflicts", is_flag=True, help="显示规则冲突详情")
+@click.option("--explain-extension", "explain_ext", help="查看某个扩展名最终归属的分类")
 @click.option("--config", "-c", "config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path), help="加载并显示用户自定义规则")
 def config_command(
     show_categories: bool,
     show_excludes: bool,
     show_temp_patterns: bool,
     show_conflicts: bool,
+    explain_ext: Optional[str],
     config_path: Optional[Path],
 ):
     rule_manager = RuleManager()
@@ -513,8 +557,40 @@ def config_command(
         click.echo(f"\n[FILE] 加载配置文件: {config_path}")
         rule_manager.print_conflicts(rules)
 
+    if explain_ext:
+        ext = explain_ext.lower()
+        if not ext.startswith('.'):
+            ext = '.' + ext
+        explanation = rules.explain_extension(ext)
+        click.echo(f"\n[INFO] 扩展名 {ext} 最终归属:")
+        click.echo("=" * 70)
+        click.echo(f"  最终分类: {explanation['final_category']}")
+        final_cat_name = rules.categories.get(explanation['final_category'], {}).get('name', explanation['final_category'])
+        click.echo(f"  分类名称: {final_cat_name}")
+        click.echo(f"  规则来源: {'用户配置' if explanation['final_source'] == 'user' else '内置规则'}")
+        click.echo(f"  目标目录: {explanation['target_dir']}")
+        
+        if explanation['conflict']:
+            click.echo(f"\n[!] 规则冲突:")
+            builtin_cat_name = rules.categories.get(explanation['builtin_category'], {}).get('name', explanation['builtin_category'])
+            user_cat_name = rules.categories.get(explanation['user_category'], {}).get('name', explanation['user_category'])
+            click.echo(f"  内置分类: {explanation['builtin_category']} ({builtin_cat_name})")
+            click.echo(f"  用户分类: {explanation['user_category']} ({user_cat_name})")
+            click.echo(f"  处理方式: 用户配置优先，最终归为 {explanation['user_category']}")
+        
+        if explanation['builtin_category'] and not explanation['user_category']:
+            click.echo(f"\n  信息: 此扩展名仅在内置规则中定义")
+        
+        if explanation['user_category'] and not explanation['builtin_category']:
+            click.echo(f"\n  信息: 此扩展名仅在用户配置中定义")
+        
+        if not explanation['final_category']:
+            click.echo(f"\n  信息: 未找到匹配规则，将归类为 other")
+        click.echo()
+        return
+
     if show_categories:
-        click.echo("\n📂 分类规则")
+        click.echo("\n[CAT] 分类规则")
         click.echo("=" * 60)
         for key, config in rules.categories.items():
             click.echo(f"\n{config.get('name', key)} ({key})")
@@ -534,7 +610,7 @@ def config_command(
         click.echo()
 
     if show_excludes:
-        click.echo("\n🚫 排除目录")
+        click.echo("\n[EXCLUDE] 排除目录")
         click.echo("=" * 60)
         for d in rules.exclude_dirs:
             source = rules._exclude_dir_sources.get(d, "builtin") if hasattr(rules, '_exclude_dir_sources') else "builtin"
@@ -572,6 +648,102 @@ def config_command(
         click.echo("  --show-conflicts     显示规则冲突详情")
         click.echo("  --config <file>      加载并显示用户自定义规则")
         click.echo()
+
+
+@cli.command("explain", help="解释文件分类匹配原因")
+@click.argument("path", type=click.Path(path_type=Path))
+@click.option("--config", "-c", "config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path), help="自定义规则配置文件 (JSON/YAML)")
+@click.option("--output-json", type=click.Path(path_type=Path), help="导出JSON格式解释结果")
+@click.option("--show-chain", is_flag=True, help="显示完整匹配链路，包括所有尝试的规则")
+def explain_command(
+    path: Path,
+    config_path: Optional[Path],
+    output_json: Optional[Path],
+    show_chain: bool,
+):
+    rule_manager = RuleManager()
+    rules = rule_manager.load_config(config_path)
+
+    if config_path:
+        click.echo(f"[FILE] 加载配置文件: {config_path}")
+
+    path = Path(path)
+
+    if path.is_file():
+        files_to_explain = [path]
+    elif path.is_dir():
+        click.echo(f"[SCAN] 扫描目录: {path}")
+        exclude_dirs = list(rules.exclude_dirs)
+        scanner = Scanner(root_dir=path, exclude_dirs=exclude_dirs, rules=rules)
+        result = scanner.scan()
+        files_to_explain = [f.path for f in result.files]
+        click.echo(f"  共找到 {len(files_to_explain)} 个文件\n")
+    else:
+        click.echo(f"[X] 路径不存在: {path}")
+        sys.exit(1)
+
+    explanations = []
+    for file_path in files_to_explain:
+        filename = file_path.name
+        ext = file_path.suffix.lower() if file_path.suffix else None
+        explanation = rules.explain_file(filename, ext)
+        explanation["path"] = str(file_path)
+        explanations.append(explanation)
+
+    click.echo(f"\n[INFO] 分类匹配解释")
+    click.echo("=" * 80)
+
+    match_type_labels = {
+        "extension": "扩展名",
+        "pattern": "关键词",
+        "regex": "正则",
+        "default": "默认分类",
+    }
+
+    for exp in explanations:
+        filename = exp["filename"]
+        temp_str = ""
+        if exp["is_temporary"]:
+            temp_str = f" [临时文件: {exp['temp_pattern']}]"
+
+        source_str = ""
+        if exp["category_source"]:
+            source_str = f" ({'用户配置' if exp['category_source'] == 'user' else '内置规则'})"
+
+        match_type_str = match_type_labels.get(exp["match_type"], exp["match_type"])
+
+        click.echo(f"\n[FILE] {filename}{temp_str}")
+        click.echo(f"   分类: {exp['category']}{source_str}")
+        click.echo(f"   目标目录: {exp['target_dir']}")
+        click.echo(f"   匹配方式: {match_type_str}")
+        click.echo(f"   匹配规则: {exp['match_pattern']}")
+
+        if show_chain:
+            click.echo(f"   匹配链路:")
+            for i, chain_item in enumerate(exp['match_chain'], 1):
+                status = "[OK]" if chain_item['matched'] else "[--]"
+                priority = chain_item.get('priority', '')
+                source = chain_item.get('source', '')
+                source_str = f" ({source})" if source else ""
+                priority_str = f" [{priority}]" if priority else ""
+                if chain_item['type'] == 'temp_file':
+                    click.echo(f"     {i:2d}. {status} 临时文件 {chain_item['pattern']}{source_str}{priority_str}")
+                elif chain_item['type'] == 'extension':
+                    click.echo(f"     {i:2d}. {status} 扩展名 {chain_item['pattern']} -> {chain_item['category']}{source_str}{priority_str}")
+                elif chain_item['type'] == 'regex':
+                    click.echo(f"     {i:2d}. {status} 正则 {chain_item['pattern']} -> {chain_item['category']}{source_str}{priority_str}")
+                elif chain_item['type'] == 'pattern':
+                    click.echo(f"     {i:2d}. {status} 关键词 {chain_item['pattern']} -> {chain_item['category']}{source_str}{priority_str}")
+                elif chain_item['type'] == 'default':
+                    click.echo(f"     {i:2d}. {status} 默认分类 -> {chain_item['category']}{source_str}{priority_str}")
+
+    if output_json:
+        import json
+        output_path = Path(output_json)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(explanations, f, ensure_ascii=False, indent=2)
+        click.echo(f"\n[SAVE] 解释结果已导出到: {output_path}")
 
 
 def interactive_plan_confirm(plan: Plan, rules: RuleSet) -> Tuple[Plan, set, set]:
@@ -676,6 +848,7 @@ def save_confirmed_plan(
                 "source": str(a.source),
                 "destination": str(a.destination),
                 "file_size": a.file_size,
+                "skipped": False,
             }
             for a in plan.actions
         ],
@@ -685,6 +858,7 @@ def save_confirmed_plan(
                     "source": str(a.source),
                     "destination": str(a.destination),
                     "file_size": a.file_size,
+                    "skipped": str(a.source) in skipped_files or cat in skipped_categories,
                 }
                 for a in actions
             ]
@@ -693,15 +867,7 @@ def save_confirmed_plan(
     }
 
     if scan_result:
-        data["scan_summary"] = {
-            "total_count": scan_result.total_count,
-            "total_size": scan_result.total_size,
-            "duplicate_groups": len(scan_result.duplicates),
-            "duplicate_size": scan_result.duplicates_size,
-            "temp_files_count": len(scan_result.temp_files),
-            "temp_size": scan_result.temp_size,
-            "empty_dirs_count": len(scan_result.empty_dirs),
-        }
+        data["scan_result"] = scan_result.to_dict()
 
     with open(plan_cache, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -741,6 +907,7 @@ def export_plan_json(
     skipped_categories: set,
     skipped_files: set,
     config_path: Optional[Path],
+    scan_result: Optional[ScanResult] = None,
 ):
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -754,21 +921,31 @@ def export_plan_json(
             "total_size": plan.total_size,
             "total_size_human": format_size(plan.total_size),
         },
-        "skipped": {
-            "categories": list(skipped_categories),
-            "files": list(skipped_files),
-        },
+        "skipped_categories": list(skipped_categories),
+        "skipped_files": list(skipped_files),
+        "actions": [
+            {
+                "source": str(a.source),
+                "destination": str(a.destination),
+                "file_size": a.file_size,
+                "file_size_human": format_size(a.file_size),
+                "skipped": str(a.source) in skipped_files,
+            }
+            for a in plan.actions
+        ],
         "categories": {
             cat: {
                 "count": len(actions),
                 "size": sum(a.file_size for a in actions),
                 "size_human": format_size(sum(a.file_size for a in actions)),
+                "skipped": cat in skipped_categories,
                 "actions": [
                     {
                         "source": str(a.source),
                         "destination": str(a.destination),
                         "file_size": a.file_size,
                         "file_size_human": format_size(a.file_size),
+                        "skipped": str(a.source) in skipped_files or cat in skipped_categories,
                     }
                     for a in actions
                 ],
@@ -776,6 +953,9 @@ def export_plan_json(
             for cat, actions in plan.categories.items()
         },
     }
+
+    if scan_result:
+        data["scan_result"] = scan_result.to_dict()
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

@@ -105,9 +105,9 @@ class Reporter:
         report.append("")
 
         if move_log:
-            success_count = sum(1 for a in move_log.actions if a.status == "success")
+            success_count = sum(1 for a in move_log.actions if a.status in ("success", "simulated"))
             failed_count = sum(1 for a in move_log.actions if a.status == "failed")
-            moved_size = sum(a.file_size for a in move_log.actions if a.status == "success")
+            moved_size = sum(a.file_size for a in move_log.actions if a.status in ("success", "simulated"))
 
             report.append("## 执行结果")
             report.append("")
@@ -344,9 +344,9 @@ class Reporter:
     ) -> dict:
         import json
 
-        success_count = sum(1 for a in move_log.actions if a.status == "success")
+        success_count = sum(1 for a in move_log.actions if a.status in ("success", "simulated"))
         failed_count = sum(1 for a in move_log.actions if a.status == "failed")
-        moved_size = sum(a.file_size for a in move_log.actions if a.status == "success")
+        moved_size = sum(a.file_size for a in move_log.actions if a.status in ("success", "simulated"))
 
         report_data = {
             "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),

@@ -65,6 +65,121 @@ class ScanResult:
     def temp_size(self) -> int:
         return sum(f.size for f in self.temp_files)
 
+    def to_dict(self) -> dict:
+        return {
+            "files": [
+                {
+                    "path": str(f.path),
+                    "size": f.size,
+                    "created": f.created.isoformat(),
+                    "modified": f.modified.isoformat(),
+                    "extension": f.extension,
+                    "file_type": f.file_type,
+                    "is_temporary": f.is_temporary,
+                    "file_hash": f.file_hash,
+                    "category": f.category,
+                }
+                for f in self.files
+            ],
+            "empty_dirs": [str(d) for d in self.empty_dirs],
+            "duplicates": [
+                {
+                    "file_hash": d.file_hash,
+                    "files": [
+                        {
+                            "path": str(f.path),
+                            "size": f.size,
+                            "created": f.created.isoformat(),
+                            "modified": f.modified.isoformat(),
+                            "extension": f.extension,
+                            "file_type": f.file_type,
+                            "is_temporary": f.is_temporary,
+                            "file_hash": f.file_hash,
+                            "category": f.category,
+                        }
+                        for f in d.files
+                    ],
+                }
+                for d in self.duplicates
+            ],
+            "temp_files": [
+                {
+                    "path": str(f.path),
+                    "size": f.size,
+                    "created": f.created.isoformat(),
+                    "modified": f.modified.isoformat(),
+                    "extension": f.extension,
+                    "file_type": f.file_type,
+                    "is_temporary": f.is_temporary,
+                    "file_hash": f.file_hash,
+                    "category": f.category,
+                }
+                for f in self.temp_files
+            ],
+            "excluded": [str(d) for d in self.excluded],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ScanResult":
+        files = [
+            FileInfo(
+                path=Path(f["path"]),
+                size=f["size"],
+                created=datetime.fromisoformat(f["created"]),
+                modified=datetime.fromisoformat(f["modified"]),
+                extension=f["extension"],
+                file_type=f.get("file_type", "other"),
+                is_temporary=f.get("is_temporary", False),
+                file_hash=f.get("file_hash"),
+                category=f.get("category", "uncategorized"),
+            )
+            for f in data.get("files", [])
+        ]
+
+        duplicates = [
+            DuplicateGroup(
+                file_hash=d["file_hash"],
+                files=[
+                    FileInfo(
+                        path=Path(f["path"]),
+                        size=f["size"],
+                        created=datetime.fromisoformat(f["created"]),
+                        modified=datetime.fromisoformat(f["modified"]),
+                        extension=f["extension"],
+                        file_type=f.get("file_type", "other"),
+                        is_temporary=f.get("is_temporary", False),
+                        file_hash=f.get("file_hash"),
+                        category=f.get("category", "uncategorized"),
+                    )
+                    for f in d["files"]
+                ],
+            )
+            for d in data.get("duplicates", [])
+        ]
+
+        temp_files = [
+            FileInfo(
+                path=Path(f["path"]),
+                size=f["size"],
+                created=datetime.fromisoformat(f["created"]),
+                modified=datetime.fromisoformat(f["modified"]),
+                extension=f["extension"],
+                file_type=f.get("file_type", "other"),
+                is_temporary=f.get("is_temporary", False),
+                file_hash=f.get("file_hash"),
+                category=f.get("category", "uncategorized"),
+            )
+            for f in data.get("temp_files", [])
+        ]
+
+        return cls(
+            files=files,
+            empty_dirs=[Path(d) for d in data.get("empty_dirs", [])],
+            duplicates=duplicates,
+            temp_files=temp_files,
+            excluded=[Path(d) for d in data.get("excluded", [])],
+        )
+
 
 @dataclass
 class MoveAction:
